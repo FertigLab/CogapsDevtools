@@ -362,7 +362,7 @@ install_py :
 example_py :
 	python3 -c 'import cogaps; cogaps.runCogaps("Python_Package/data/GIST.csv")'
 
-## Profiling Targets
+## Profiling/Benchmarking Targets
 
 profile_R_square :
 	mkdir -p profiles
@@ -384,8 +384,11 @@ perf_R_rectangle :
 	perf record R -e 'library(CoGAPS); data(GIST); data <- matrix(sample(GIST.matrix, size=50*5000, replace=TRUE), nrow=50); CoGAPS(data, nIterations=5000, outputFrequency=1000)'
 	perf report --stdio
 
-gprof_R_square :
-	echo "gprof"
+benchmark_R_rectangle :
+	/usr/bin/time -v R -e 'library(CoGAPS); data(GIST); data <- matrix(sample(GIST.matrix, size=20*5000, replace=TRUE), nrow=20); CoGAPS(data, nIterations=5000, outputFrequency=1000)'
+
+benchmark_R_square :
+	/usr/bin/time -v R -e 'library(CoGAPS); data(GIST); data <- matrix(sample(GIST.matrix, size=250*250, replace=TRUE), nrow=250); CoGAPS(data, nIterations=5000, outputFrequency=1000)'
 
 ## Miscellaneous Targets
 
