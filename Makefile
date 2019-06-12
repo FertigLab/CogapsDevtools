@@ -177,12 +177,6 @@ test_data_structures :
 	R -e 'library(CoGAPS); data(GIST); CoGAPS(GIST.matrix, nPatterns=4, nIterations=100, outputFrequency=25, seed=1234, sparseOptimization=TRUE, asynchronousUpdates=FALSE)'
 	@make install_R
 
-profile_R :
-	mkdir -p profiles
-	mkdir -p profiles/R
-	R -d "valgrind --tool=callgrind" -e 'library(CoGAPS); data(GIST); data <- matrix(sample(GIST.matrix, size=250*250, replace=TRUE), nrow=250); CoGAPS(data, nIterations=2000, outputFrequency=250)'
-	mv callgrind.out.* profiles/R
-
 long_matrix_profile_R:
 	mkdir -p profiles
 	mkdir -p profiles/R
@@ -360,7 +354,7 @@ profile_CLI :
 	valgrind --tool=callgrind CLI_build/cogaps --data SampleData/GIST.mtx --nIterations 2500
 	mv callgrind.out.* profiles/CLI
 
-## Targers for Python Package
+## Targets for Python Package
 
 install_py :
 	pip3 install ./Python_Package
@@ -368,6 +362,44 @@ install_py :
 example_py :
 	python3 -c 'import cogaps; cogaps.runCogaps("Python_Package/data/GIST.csv")'
 
+## Profiling Targets
+
+profile_R_square :
+	mkdir -p profiles
+	mkdir -p profiles/R
+	R -d "valgrind --tool=callgrind" -e 'library(CoGAPS); data(GIST); data <- matrix(sample(GIST.matrix, size=250*250, replace=TRUE), nrow=250); CoGAPS(data, nIterations=2000, outputFrequency=250)'
+	mv callgrind.out.* profiles/R
+
+profile_R_rectangle :
+	mkdir -p profiles
+	mkdir -p profiles/R
+	R -d "valgrind --tool=callgrind" -e 'library(CoGAPS); data(GIST); data <- matrix(sample(GIST.matrix, size=20*5000, replace=TRUE), nrow=20); CoGAPS(data, nIterations=5000, outputFrequency=200)'
+	mv callgrind.out.* profiles/R
+
+perf_R_square :
+	perf record R -e 'library(CoGAPS); data(GIST); data <- matrix(sample(GIST.matrix, size=500*500, replace=TRUE), nrow=500); CoGAPS(data, nIterations=5000, outputFrequency=1000)'
+	perf report --stdio
+
+perf_R_rectangle :
+	perf record R -e 'library(CoGAPS); data(GIST); data <- matrix(sample(GIST.matrix, size=50*5000, replace=TRUE), nrow=50); CoGAPS(data, nIterations=5000, outputFrequency=1000)'
+	perf report --stdio
+
+gprof_R_square :
+	echo "gprof"
+
+## Miscellaneous Targets
+
+build_and_install_valgrind :
+	cd external && \
+	tar -xf valgrind-3.15.0.patched.tar.bz2 && \
+	cd valgrind-3.15.0 && \
+	./autogen.sh && \
+	./configure && \
+	make && \
+	make install && \
+	cd .. && \
+	rm -rf valgrind-3.15.0
+	
 ## Help targets
 
 help :
