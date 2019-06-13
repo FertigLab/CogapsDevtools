@@ -373,7 +373,7 @@ profile_R_square :
 profile_R_rectangle :
 	mkdir -p profiles
 	mkdir -p profiles/R
-	R -d "valgrind --tool=callgrind" -e 'library(CoGAPS); data(GIST); data <- matrix(sample(GIST.matrix, size=20*5000, replace=TRUE), nrow=20); CoGAPS(data, nIterations=5000, outputFrequency=200)'
+	R -d "valgrind --tool=callgrind" -e 'library(CoGAPS); data(GIST); set.seed(123); data <- matrix(sample(GIST.matrix, size=20*10000, replace=TRUE), nrow=20); CoGAPS(data, nIterations=2500, outputFrequency=250, seed=123)'
 	mv callgrind.out.* profiles/R
 
 perf_R_square :
@@ -381,11 +381,11 @@ perf_R_square :
 	perf report --stdio
 
 perf_R_rectangle :
-	perf record R -e 'library(CoGAPS); data(GIST); data <- matrix(sample(GIST.matrix, size=50*5000, replace=TRUE), nrow=50); CoGAPS(data, nIterations=5000, outputFrequency=1000)'
+	perf record R -e 'library(CoGAPS); data(GIST); set.seed(123); data <- matrix(sample(GIST.matrix, size=20*10000, replace=TRUE), nrow=20); CoGAPS(data, nIterations=2500, outputFrequency=500, seed=123)'
 	perf report --stdio
 
 benchmark_R_rectangle :
-	/usr/bin/time -v R -e 'library(CoGAPS); data(GIST); data <- matrix(sample(GIST.matrix, size=20*5000, replace=TRUE), nrow=20); CoGAPS(data, nIterations=5000, outputFrequency=1000)'
+	/usr/bin/time -v R -e 'library(CoGAPS); data(GIST); set.seed(123); data <- matrix(sample(GIST.matrix, size=20*10000, replace=TRUE), nrow=20); CoGAPS(data, nIterations=2500, outputFrequency=500, seed=123)'
 
 benchmark_R_square :
 	/usr/bin/time -v R -e 'library(CoGAPS); data(GIST); data <- matrix(sample(GIST.matrix, size=250*250, replace=TRUE), nrow=250); CoGAPS(data, nIterations=5000, outputFrequency=1000)'
