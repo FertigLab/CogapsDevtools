@@ -206,16 +206,16 @@ sparse_benchmark_R_big :
 	R -e 'library(CoGAPS); set.seed(42); data <- matrix(rnbinom(3200 * 4500, 10, 0.7), nrow=3200); data[runif(length(data), 0, 1) < 0.97] <- 0; CoGAPS(data, nPatterns=80, nIterations=2000, outputFrequency=250, sparseOptimization=TRUE, singleCell=TRUE, seed=123)'
 
 set_R_compiler_gcc :
-	@printf "CC=ccache gcc\nCXX=ccache g++\nMAKEFLAGS=-j6\n" > ~/.R/Makevars
+	@printf "CC=ccache gcc\nCXX=ccache g++\nMAKEFLAGS=\n" > ~/.R/Makevars
 
 set_R_compiler_gcc_6 :
-	@printf "CC=ccache gcc-6\nCXX=ccache g++-6\nMAKEFLAGS=-j6\n" > ~/.R/Makevars
+	@printf "CC=ccache gcc-6\nCXX=ccache g++-6\nMAKEFLAGS=\n" > ~/.R/Makevars
 
 set_R_compiler_clang :
-	@printf "CC=ccache clang\nCXX=ccache clang++\nMAKEFLAGS=-j6\n" > ~/.R/Makevars
+	@printf "CC=ccache clang\nCXX=ccache clang++\nMAKEFLAGS=\n" > ~/.R/Makevars
 
 set_R_compiler_clang_6 :
-	@printf "CC=ccache clang-6.0\nCXX=ccache clang++-6.0\nMAKEFLAGS=-j6\n" > ~/.R/Makevars
+	@printf "CC=ccache clang-6.0\nCXX=ccache clang++-6.0\nMAKEFLAGS=\n" > ~/.R/Makevars
 
 install_R_no_simd : build_R
 	@make install_R CONFIG_ARGS=--disable-simd
@@ -383,6 +383,12 @@ perf_R_square :
 perf_R_rectangle :
 	perf record R -e 'library(CoGAPS); data(GIST); set.seed(123); data <- matrix(sample(GIST.matrix, size=20*10000, replace=TRUE), nrow=20); CoGAPS(data, nIterations=2500, outputFrequency=500, seed=123)'
 	perf report --stdio
+
+PERF_CACHE_STATS=L1-dcache-loads,L1-dcache-load-misses,L1-icache-loads,L1-icache-load-misses,cache-references,cache-misses,LLC-loads,LLC-load-misses
+PERF_STATS=$(PERF_CACHE_STATS),cycles,instructions,branches,branch-misses,faults,migrations,stalled-cycles-frontend
+
+perf_stat_R_rectangle :
+	perf stat -B -e $(PERF_STATS) R -e 'library(CoGAPS); data(GIST); set.seed(123); data <- matrix(sample(GIST.matrix, size=20*10000, replace=TRUE), nrow=20); CoGAPS(data, nIterations=1000, outputFrequency=500, seed=123)'
 
 benchmark_R_rectangle :
 	/usr/bin/time -v R -e 'library(CoGAPS); data(GIST); set.seed(123); data <- matrix(sample(GIST.matrix, size=20*10000, replace=TRUE), nrow=20); CoGAPS(data, nIterations=2500, outputFrequency=500, seed=123)'
