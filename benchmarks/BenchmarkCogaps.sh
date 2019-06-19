@@ -33,6 +33,10 @@ do
         BENCHMARK_COMPILER=true
         ;;
 
+        --bm-async-overhead*)
+        BENCHMARK_ASYNC_OVERHEAD=true
+        ;;
+
         --full*)
         RUN_FULL_BM=true
         ;;
@@ -73,6 +77,24 @@ if [ "${BENCHMARK_SCALING}" = true ]; then
     Rscript SingleCogapsBenchmark.R --benchmarks.file=allBenchmarks.rds \
         --num.data.rows=20 --num.data.cols=20000 --seed=123 --num.patterns=10 \
         --num.iterations=500
+fi
+
+# benchmark the overhead that async incurs
+if [ "${BENCHMARK_ASYNC_OVERHEAD}" = true ]; then
+    RUN_QUICK_BM=false
+    echo "Benchmarking the overhead of asynchronous cogaps" 1>&3 2>&4
+#    Rscript SingleCogapsBenchmark.R --benchmarks.file=allBenchmarks.rds \
+#        --num.data.rows=30 --num.data.cols=20000 --seed=123 --num.patterns=20 \
+#        --num.iterations=500 --asynchronous.updates=0 --num.threads=1 \
+#        --output.frequency=100
+    Rscript SingleCogapsBenchmark.R --benchmarks.file=allBenchmarks.rds \
+        --num.data.rows=30 --num.data.cols=20000 --seed=123 --num.patterns=20 \
+        --num.iterations=500 --asynchronous.updates=1 --num.threads=1 \
+        --output.frequency=100
+    Rscript SingleCogapsBenchmark.R --benchmarks.file=allBenchmarks.rds \
+        --num.data.rows=30 --num.data.cols=20000 --seed=123 --num.patterns=20 \
+        --num.iterations=500 --asynchronous.updates=1 --num.threads=4 \
+        --output.frequency=100
 fi
 
 # run a quick benchmark

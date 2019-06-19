@@ -16,6 +16,7 @@ option_list <- list(
     make_option("--num.sets", dest="num.sets", default=NULL),
     make_option("--transpose.data", dest="transpose.data", default=NULL),
     make_option("--num.threads", dest="num.threads", default=NULL),
+    make_option("--asynchronous.updates", dest="asynchronous.updates", default=NULL),
     make_option("--output.frequency", dest="output.frequency", default=NULL),
     make_option("--github.tag", dest="github.tag", default=NULL)
 )
@@ -58,6 +59,7 @@ opts <- convertToNumeric(opts, "seed")
 opts <- convertToNumeric(opts, "num.sets")
 opts <- convertToNumeric(opts, "num.threads")
 opts <- convertToNumeric(opts, "output.frequency")
+opts <- convertToNumeric(opts, "asynchronous.updates")
 opts <- convertToBool(opts, "transpose.data")
 
 # make sure required arguments are given
@@ -102,6 +104,8 @@ getValue <- function(value, default) ifelse(is.null(value), default, value)
 transposeData <- getValue(opts$transpose.data, default=FALSE)
 nThreads <- getValue(opts$num.threads, default=1)
 outputFrequency <- getValue(opts$output.frequency, default=1000)
+asynchronousUpdates <- getValue(opts$asynchronous.updates, default=1)
+asynchronousUpdates <- ifelse(asynchronousUpdates == 0, FALSE, TRUE)
 
 # create the data
 data(GIST)
@@ -111,7 +115,7 @@ bmData <- matrix(sample(GIST.matrix, size=opts$num.data.rows * opts$num.data.col
 # run cogaps and save result
 gapsResult <- CoGAPS(data=bmData, params=params, nThreads=nThreads,
     transposeData=transposeData, outputFrequency=outputFrequency)
-#    asynchronousUpdates=TRUE)
+#    asynchronousUpdates=asynchronousUpdates)
 bm <- data.frame(runningTime=gapsResult@metadata$totalRunningTime,
                  nRow=nrow(bmData),
                  nCol=ncol(bmData),
