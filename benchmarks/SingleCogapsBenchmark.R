@@ -111,6 +111,7 @@ bmData <- matrix(sample(GIST.matrix, size=opts$num.data.rows * opts$num.data.col
 # run cogaps and save result
 gapsResult <- CoGAPS(data=bmData, params=params, nThreads=nThreads,
     transposeData=transposeData, outputFrequency=outputFrequency)
+#    asynchronousUpdates=TRUE)
 bm <- data.frame(runningTime=gapsResult@metadata$totalRunningTime,
                  nRow=nrow(bmData),
                  nCol=ncol(bmData),
