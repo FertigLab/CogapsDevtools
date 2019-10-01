@@ -1,33 +1,38 @@
-R_CPP_SOURCES = $(filter-out R_Package/src/RcppExports.cpp, $(wildcard R_Package/src/*.cpp)) \
-	$(wildcard R_Package/src/math/*.cpp) \
+R_CPP_SOURCES := $(wildcard R_Package/src/*.cpp) \
+	$(wildcard R_Package/src/atomic/*.cpp) \
 	$(wildcard R_Package/src/data_structures/*.cpp) \
-	$(wildcard R_Package/src/file_parser/*.cpp)
+	$(wildcard R_Package/src/file_parser/*.cpp) \
+	$(wildcard R_Package/src/gibbs_sampler/*.cpp) \
+	$(wildcard R_Package/src/math/*.cpp) \
+	$(wildcard R_Package/src/utils/*.cpp)
+
+R_CPP_SOURCES := $(filter-out R_Package/src/RcppExports.cpp, $(R_CPP_SOURCES))
+R_CPP_SOURCES := $(filter-out R_Package/src/atomic/ProposalQueue.cpp, $(R_CPP_SOURCES))
+R_CPP_SOURCES := $(filter-out R_Package/src/atomic/ConcurrentAtomicDomain.cpp, $(R_CPP_SOURCES))
+R_CPP_SOURCES := $(filter-out R_Package/src/data_structures/HybridVector.cpp, $(R_CPP_SOURCES))
 
 R_CPP_HEADERS = \
 	$(wildcard R_Package/src/*.h) \
 	$(wildcard R_Package/src/atomic/*.h) \
-	$(wildcard R_Package/src/cpp_tests/*.h) \
 	$(wildcard R_Package/src/data_structures/*.h) \
 	$(wildcard R_Package/src/file_parser/*.h) \
 	$(wildcard R_Package/src/gibbs_sampler/*.h) \
 	$(wildcard R_Package/src/math/*.h) \
-	$(wildcard R_Package/src/utils/*.h) \
+	$(wildcard R_Package/src/utils/*.h)
 
-R_PATH = /mnt/c/Users/tsherma4/linux_home/R-3.5.1/build_dir_1/
+INCLUDES = \
+	-IR_Package/src/include \
+	-I"/usr/share/R/include" \
+	-I"/home/tom/R/x86_64-pc-linux-gnu-library/3.5/Rcpp/include"
 
-# TODO get these paths from R
-INCLUDES = -I$(R_PATH)include \
-	-I$(R_PATH)library/Rcpp/include \
-	-I$(R_PATH)library/BH/include
-
-DEFINES = -DNDEBUG -DSIMD -DNGAPS_DEBUG -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0
+DEFINES = -DNDEBUG -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -D__GAPS_R_BUILD__
 CFLAGS = -fpic -g -O2 -fstack-protector-strong -Wformat -Wdate-time -fopenmp=libomp \
 	-march=native -Werror=format-security -D_FORTIFY_SOURCE=2 -Werror -x c++
 
 R_CPP_LINT_TARGETS = $(addsuffix .lint, $(R_CPP_SOURCES)) \
 	$(addsuffix .lint, $(R_CPP_HEADERS))
 
-CLANG_TIDY_CHECKS := *,-llvm-header-guard,-android*,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-google-readability-todo,-modernize-use-auto,-cppcoreguidelines-pro-type-vararg,-google-runtime-references,-modernize-loop-convert,-hicpp-use-equals-default,-hicpp-use-equals-delete,-modernize-use-equals-default,-modernize-use-equals-delete,-fuchsia-default-arguments,-modernize-return-braced-init-list,-modernize-use-default
+CLANG_TIDY_CHECKS := *,-llvm-header-guard,-android*,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-google-readability-todo,-modernize-use-auto,-cppcoreguidelines-pro-type-vararg,-google-runtime-references,-modernize-loop-convert,-hicpp-use-equals-default,-hicpp-use-equals-delete,-modernize-use-equals-default,-modernize-use-equals-delete,-fuchsia-default-arguments,-modernize-return-braced-init-list,-modernize-use-default,-modernize-use-nullptr
 
 LINT_COLOR := \033[0;34m
 NO_COLOR := \033[m
@@ -71,7 +76,8 @@ vignette : build_R_with_vignettes
 	rm -rf vignette_temp && \
 	mkdir vignette_temp && \
 	tar -xf CoGAPS_*.tar.gz -C vignette_temp && \
-	cp vignette_temp/CoGAPS/inst/doc/CoGAPS.html .. && \
+	#cp vignette_temp/CoGAPS/inst/doc/CoGAPS.html .. && \
+	cp vignette_temp/CoGAPS/inst/doc/DataInput.html .. && \
 	rm -rf vignette_temp && \
 	cd ..
 
@@ -286,14 +292,21 @@ clean :
 
 ## Targets for standalone CLI
 
+full_clean_CLI_build_install :
+	@make clean_CLI
+	@make CLI_configure_script
+	@make configure_CLI
+	@make build_CLI
+	@make install_CLI
+
+clean_CLI :
+	rm -rf CLI_build
+
 CLI_configure_script :
 	cd Standalone_CLI && \
 	autoreconf -i && \
 	rm -rf autom4te.cache && \
 	cd ..
-
-clean_CLI :
-	rm -rf CLI_build
 
 configure_CLI : clean_CLI
 	cd Standalone_CLI && \

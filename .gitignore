@@ -2,5 +2,6 @@ R_Package/
 Python_Package/
 Standalone_CLI/
 R_build/
+CLI_build/
 CoGAPS.html
 perf.data*
